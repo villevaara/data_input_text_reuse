@@ -3,7 +3,6 @@ from os import listdir
 import argparse
 import csv
 import os
-
 import ecco_index
 
 
@@ -49,7 +48,8 @@ def get_text_for_doc_id(doc_id, ecco_id_dict=None):
     if ecco_id_dict is None:
         ecco_id_dict = get_ecco_id_dict()
     if get_doc_id_collection(doc_id) == "eebo":
-        docpath = "../data/raw/eebotxt/eebo_phase1/" + doc_id[:2] + "/" + doc_id
+        docpath = (
+            "../data/raw/eebotxt/eebo_phase1/" + doc_id[:2] + "/" + doc_id)
     elif get_doc_id_collection(doc_id) == "ecco":
         docpath = ecco_id_dict[doc_id]
     textdata_list = get_dirdata(docpath)
