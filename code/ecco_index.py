@@ -3,7 +3,7 @@ from fnmatch import fnmatch
 import csv
 
 
-def get_ecco_dict(root='./data/raw/eccotxt'):
+def get_ecco_dict(root='../data/raw/eccotxt'):
     pattern = "xml"
     fullpaths = []
     for path, subdirs, files in os.walk(root):
@@ -32,8 +32,8 @@ def write_eccodict(fname, ecco_out_data):
 
 def main():
     ecco_out_data = get_ecco_dict()
-    write_eccodict("data/work/ecco_dict.csv", ecco_out_data)
+    write_eccodict("../data/work/ecco_dict.csv", ecco_out_data)
 
 
-if __name__ == "main":
+if __name__ == "__main__":
     main()

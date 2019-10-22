@@ -1,5 +1,9 @@
 data/raw
 data/work/*.csv
+data/work/*/*.tsv
+data/work/img
+data/work/blast_*
 venv
 __pycache__
-output/*.json
+output
+*.pdf

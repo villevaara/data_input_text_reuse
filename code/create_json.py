@@ -12,7 +12,8 @@ def get_input_ids(input_txt):
         lines = []
         for line in inputfile.readlines():
             line = line.strip("\n")
-            lines.append(line)
+            if line != "":
+                lines.append(line)
         return lines
 
 
@@ -44,9 +45,11 @@ def get_doc_id_collection(doc_id):
         return "ecco"
 
 
-def get_text_for_doc_id(doc_id, ecco_id_dict):
+def get_text_for_doc_id(doc_id, ecco_id_dict=None):
+    if ecco_id_dict is None:
+        ecco_id_dict = get_ecco_id_dict()
     if get_doc_id_collection(doc_id) == "eebo":
-        docpath = "data/raw/eebotxt/eebo_phase1/" + doc_id[:2] + "/" + doc_id
+        docpath = "../data/raw/eebotxt/eebo_phase1/" + doc_id[:2] + "/" + doc_id
     elif get_doc_id_collection(doc_id) == "ecco":
         docpath = ecco_id_dict[doc_id]
     textdata_list = get_dirdata(docpath)
@@ -59,16 +62,15 @@ def write_json_results(outdata, jsonfile):
     for entry in outdata:
         entry_json = json.dumps(entry) + "\n"
         jsonstring += entry_json
-    # jsonfile = "testout.json"
     with open(jsonfile, 'w') as jsonfile:
         jsonfile.write(jsonstring)
 
 
 def get_ecco_id_dict(re_create=False):
-    if os.path.exists('./data/work/ecco_dict.csv') and not re_create:
+    if os.path.exists('../data/work/ecco_dict.csv') and not re_create:
         print("using existing ecco_dict.csv")
         ecco_dict = {}
-        with open('./data/work/ecco_dict.csv', 'r') as eccocsv:
+        with open('../data/work/ecco_dict.csv', 'r') as eccocsv:
             reader = csv.DictReader(eccocsv)
             for row in reader:
                 ecco_dict[row['ecco_id']] = row['path']
@@ -86,21 +88,20 @@ def get_dataset_for_doc_id_list(doc_id_list, ecco_id_dict=get_ecco_id_dict()):
     return outdata
 
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--input', '-i', help="a list if document ids", type=str,
-                    default="doc_ids.txt")
-parser.add_argument('--output', '-o', help="name of json file", type=str,
-                    default="doc_texts.json")
-args = parser.parse_args()
-input_ids = get_input_ids("data/work/" + args.input)
-# outputfile = args.output
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--input', '-i', help="a list if document ids",
+                        type=str, default="doc_ids.txt")
+    parser.add_argument('--output', '-o', help="name of json file", type=str,
+                        default="doc_texts.json")
+    args = parser.parse_args()
+    print("input: " + "../data/work/" + args.input)
+    input_ids = get_input_ids("../data/work/" + args.input)
 
-outdata = get_dataset_for_doc_id_list(input_ids)
-write_json_results(outdata, ("output/" + args.output))
+    outdata = get_dataset_for_doc_id_list(input_ids)
+    print("output: " + "../output/" + args.output)
+    write_json_results(outdata, ("../output/" + args.output))
 
-# rootdir = "./eebotxt/eebo_phase1/A0/"
-# rootdir_files = listdir(rootdir)
 
-# test_ids = []
-# for dirname in rootdir_files[0:100]:
-#     test_ids.append(dirname)
+if __name__ == "__main__":
+    main()
