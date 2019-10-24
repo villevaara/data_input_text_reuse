@@ -8,12 +8,44 @@ from collections import OrderedDict
 from bisect import bisect_left
 # from lib.octavo_api_client import get_cluster_data_for_document_id
 from lib.fragmentlists import get_fragmentlist
+from lib.utils_common import path_is_empty, create_dir_if_not_exists
 from random import random
 from PIL import Image
 from PIL import ImageDraw
 from PIL import ImageFont
 from fpdf import FPDF
 import csv
+from shutil import copy2
+
+
+def gather_eccodata(doc_id, target_path, ecco_source_dict,
+                    force_fetch=False):
+    txt_target_path = target_path + "/" + str(doc_id) + "/fulltext"
+    xml_target_path = target_path + "/" + str(doc_id) + "/xml"
+    pagetxt_target_path = target_path + "/" + str(doc_id) + "/pagetexts"
+    img_target_path = target_path + "/" + str(doc_id) + "/img"
+    # create dirs if missing
+    for path in [txt_target_path, xml_target_path,
+                 pagetxt_target_path, img_target_path]:
+        create_dir_if_not_exists(path)
+    # get fulltxt file
+    if path_is_empty(txt_target_path) or force_fetch:
+        source_path = ecco_source_dict[doc_id]['path']
+        sourcefiles = glob.glob(source_path + "/*.txt")
+        for sourcefile in sourcefiles:
+            copy2(sourcefile, (txt_target_path + "/"))
+    # get pages from pouta with scp
+    if path_is_empty(pagetxt_target_path) or force_fetch:
+        source_path = ecco_source_dict[doc_id]['pouta_pages']
+        os.system("scp -i ../../comhis.pem " +
+                  source_path + "/* " +
+                  pagetxt_target_path + "/.")
+    # get xml from pouta with scp
+    if path_is_empty(xml_target_path) or force_fetch:
+        source_path = ecco_source_dict[doc_id]['pouta_xml']
+        os.system("scp -i ../../comhis.pem " +
+                  source_path + "/* " +
+                  xml_target_path + "/.")
 
 
 def write_plaintext_mismatch(text_plaintext, text_pages_combined, outputdir):
@@ -98,8 +130,29 @@ class BookContainer(object):
         self.set_plaintext()
         # sets plaintext_first_char_page_index and page_header_lengths
         self.set_fulltext_page_char_index()
+        self.set_char_index_by_page_number()
         if fetch_images:
             self.fetch_document_images()
+
+    def set_char_index_by_page_number(self):
+        firstpage = min(self.plaintext_first_char_page_index.values())
+        lastpage = max(self.plaintext_first_char_page_index.values())
+        allpages = range(firstpage, lastpage)
+        page_char_index_by_page = {}
+        flipped_temp_dict = {}
+        for key, value in self.plaintext_first_char_page_index.items():
+            flipped_temp_dict[value] = key
+        prev_char_index = flipped_temp_dict[1]
+        for page_number in allpages:
+            if page_number in flipped_temp_dict.keys():
+                page_char_index_by_page[page_number] = (
+                    flipped_temp_dict[page_number])
+                prev_char_index = (
+                    flipped_temp_dict[page_number])
+            else:
+                page_char_index_by_page[page_number] = prev_char_index
+        self.first_char_page_index_by_page = page_char_index_by_page
+
 
     def set_pagedata(self):
         # [datadir]/[octavo_id]/xml/[octavo_id].xml
@@ -201,8 +254,14 @@ class BookContainer(object):
                 if word['highlight']:
                     page_hl_tokens += 1
                     page_hl_chars += len(word['text'])
-            page_char_hl_ratio = page_hl_chars / page_total_chars
-            page_token_hl_ratio = page_hl_tokens / page_total_tokens
+            if page_total_chars == 0:
+                page_char_hl_ratio = 0
+            else:
+                page_char_hl_ratio = page_hl_chars / page_total_chars
+            if page_total_tokens == 0:
+                page_token_hl_ratio = 0
+            else:
+                page_token_hl_ratio = page_hl_tokens / page_total_tokens
             page_hl_statistics[page_number] = {
                 'header': page_header,
                 'page_number': page_number,
@@ -222,12 +281,18 @@ class BookContainer(object):
                 page_total_chars)
             section_hl_statistics[page_header]['chars_highlighted'] += (
                 page_hl_chars)
-            section_hl_statistics[page_header]['tokens_ratio'] = (
-                section_hl_statistics[page_header]['tokens_highlighted'] /
-                section_hl_statistics[page_header]['tokens_total'])
-            section_hl_statistics[page_header]['chars_ratio'] = (
-                section_hl_statistics[page_header]['chars_highlighted'] /
-                section_hl_statistics[page_header]['chars_total'])
+            if section_hl_statistics[page_header]['tokens_total'] == 0:
+                section_hl_statistics[page_header]['tokens_ratio'] = 0
+            else:
+                section_hl_statistics[page_header]['tokens_ratio'] = (
+                    section_hl_statistics[page_header]['tokens_highlighted'] /
+                    section_hl_statistics[page_header]['tokens_total'])
+            if section_hl_statistics[page_header]['chars_total'] == 0:
+                section_hl_statistics[page_header]['chars_ratio'] = 0
+            else:
+                section_hl_statistics[page_header]['chars_ratio'] = (
+                    section_hl_statistics[page_header]['chars_highlighted'] /
+                    section_hl_statistics[page_header]['chars_total'])
             # add to volume totals
             total_chars += page_total_chars
             total_hl_chars += page_hl_chars
@@ -311,16 +376,16 @@ class BookContainer(object):
         return page_number
 
     def get_page_first_char_index(self, pagenumber):
-        # add conditon for pages containing header data.
+        # add condition for pages containing header data.
         # return page first char index minus length of header data
-        return list(
-            self.plaintext_first_char_page_index.keys())[pagenumber - 1]
+        return self.first_char_page_index_by_page[pagenumber]
+        # return list(
+        #     self.plaintext_first_char_page_index.keys())[pagenumber - 1]
 
     def get_page_last_char_index(self, pagenumber):
         fulltext_length = len(self.plaintext)
-        if pagenumber < len(self.plaintext_first_char_page_index):
-            return list(
-                self.plaintext_first_char_page_index.keys())[pagenumber] - 1
+        if pagenumber < len(self.first_char_page_index_by_page):
+            return self.first_char_page_index_by_page[pagenumber] - 1
         else:
             return (fulltext_length - 1)
 
@@ -436,6 +501,8 @@ class BookContainer(object):
     def get_page_header_length(self, pagetext_list):
         header_length = 0
         # if first char of first line is # start counting header length
+        if len(pagetext_list) == 0:
+            return header_length
         if pagetext_list[0][0] == "#":
             for line in pagetext_list:
                 if line[0] == "#" or line[0] == "\n":
@@ -492,6 +559,8 @@ class BookContainer(object):
                     # embedded headers.
                     # self.get_page_header_length(pagetext_list))
                     self.get_page_header_length(pagetext_list_filtered))
+            if len(pagetext) == 0:
+                continue
             first_char_page_index[chars_processed] = pagenumber
             chars_processed += len(pagetext)
             combined_text_list.append(pagetext)

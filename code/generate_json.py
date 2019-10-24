@@ -1,5 +1,5 @@
 from text_encoder import TextEncoder
-from create_json import get_text_for_doc_id, get_ecco_id_dict
+from create_blast_input_json import get_text_for_doc_id, get_ecco_id_dict
 from lib.helpers import create_dir_if_not_exists
 import json
 import lib.blast_datareader as blastdr

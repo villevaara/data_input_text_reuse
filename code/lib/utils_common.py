@@ -36,3 +36,11 @@ def write_csv_from_dictlist(dictlist, csv_file):
         csvwriter.writeheader()
         for row in dictlist:
             csvwriter.writerow(row)
+
+
+def path_is_empty(path):
+    for dirpath, dirnames, files in os.walk(path + '/.'):
+        if files:
+            return False
+        if not files:
+            return True

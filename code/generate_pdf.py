@@ -7,12 +7,15 @@ from lib.fragmentlists import (
 from lib.tr_bookcontainer import (
     get_docid_fragments,
     BookContainer,
-    get_local_ecco_fulltext_data)
+    get_local_ecco_fulltext_data,
+    gather_eccodata)
 from lib.utils_common import create_dir_if_not_exists
 import csv
 import json
 import glob
 import sys
+from ecco_index import read_eccosource_dict
+# from lib.tr_bookcontainer import
 
 
 def get_fragment_id_set(docid_fragments):
@@ -281,8 +284,8 @@ cluster_api_client = OctavoEccoClusterClient()
 cluster_api_client = None
 
 # docids_asciimap = read_docid_asciimap_csv('data/eccoids/asciilines.csv')
-xml_img_page_datadir = (
-    "../data/raw/ecco-xml-img/")
+xml_img_page_datadir = ("../data/raw/ecco-xml-img/")
+
 fields_ecco = ["documentID", "content"]
 field_eccocluster = ["documentID", "fragmentID", "text",
                      "startIndex", "endIndex"]
@@ -300,6 +303,17 @@ create_dir_if_not_exists(temp_workdir)
 
 # Hume, History of England
 docids_first = [
+    "1729100401",
+    "1729500108",
+    "1729500107",
+    "1729400106",
+    "1729400105",
+    "1729300104",
+    "1729200103",
+    "1729200102",
+    ]
+
+docids_later = [
     # "0162900301",  # 1762
     # "0162900302",  # 1762
     # "0429000101",  # 1759
@@ -308,17 +322,13 @@ docids_first = [
     # "0162200200"   # 1757
     ]
 
-docids_later = [
-    # "0145000201",
-    # "0145000202",
-    # "0145100103",
-    # "0145100104",
-    # "0145100105",
-    "0145100106",
-    "0145100107",
-    # "0145200108"
-    ]
-
+# fetch local data
+all_ids = docids_first + docids_later
+ecco_source_dict = read_eccosource_dict("../data/work/ecco_dict.csv")
+for doc_id in all_ids:
+    gather_eccodata(doc_id, target_path=xml_img_page_datadir,
+                    ecco_source_dict=ecco_source_dict,
+                    force_fetch=False)
 
 first_ed_volumes_frag_dict = get_volumes_fragment_dict(
     edition_ecco_ids=docids_first,
