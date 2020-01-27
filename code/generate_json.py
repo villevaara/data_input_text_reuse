@@ -1,9 +1,70 @@
 from text_encoder import TextEncoder
-from create_blast_input_json import get_text_for_doc_id, get_ecco_id_dict
+# from create_blast_input_json import get_text_for_doc_id, get_ecco_id_dict
 from lib.helpers import create_dir_if_not_exists
 import json
 import lib.blast_datareader as blastdr
 import sys
+import csv
+import os
+import ecco_index
+from os import listdir
+
+
+def read_txt(text_file_loc):
+    with open(text_file_loc) as textfile:
+        text = textfile.read()
+        return text
+
+
+def get_ecco_id_dict(re_create=False,
+                     csv_location='../data/work/ecco_dict.csv'):
+    ecco_dict = {}
+    if os.path.exists(csv_location) and not re_create:
+        print("using existing ecco_dict.csv")
+        with open(csv_location, 'r') as eccocsv:
+            reader = csv.DictReader(eccocsv)
+            for row in reader:
+                ecco_dict[row['id']] = row['path']
+    else:
+        print("getting ecco dict on the fly")
+        ecco_list = ecco_index.get_ecco_dict()
+        for row in ecco_list:
+            ecco_dict[row['id']] = row['path']
+    return ecco_dict
+
+
+def get_dirdata(dirpath):
+    resdict_list = []
+    thisdir_files = listdir(dirpath)
+    for filename in thisdir_files:
+        doc_id = filename.replace(
+            ".headed", "").replace(".txt", "")
+        text_file_loc = dirpath + "/" + filename
+        text = read_txt(text_file_loc)
+        resdict_list.append({
+            'doc_id': doc_id,
+            'text': text
+            })
+    return resdict_list
+
+
+def get_doc_id_collection(doc_id):
+    if doc_id[:1] == "A" or doc_id[:1] == "B":
+        return "eebo"
+    else:
+        return "ecco"
+
+
+def get_text_for_doc_id(doc_id, ecco_id_dict=None):
+    if ecco_id_dict is None:
+        ecco_id_dict = get_ecco_id_dict()
+    if get_doc_id_collection(doc_id) == "eebo":
+        docpath = (
+            "../data/raw/eebotxt/eebo_phase1/" + doc_id[:2] + "/" + doc_id)
+    elif get_doc_id_collection(doc_id) == "ecco":
+        docpath = ecco_id_dict[doc_id]
+    textdata_list = get_dirdata(docpath)
+    return textdata_list
 
 
 class BlastPair():

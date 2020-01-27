@@ -153,7 +153,6 @@ class BookContainer(object):
                 page_char_index_by_page[page_number] = prev_char_index
         self.first_char_page_index_by_page = page_char_index_by_page
 
-
     def set_pagedata(self):
         # [datadir]/[octavo_id]/xml/[octavo_id].xml
         xml_file_path = (self.xml_img_page_datadir + self.octavo_id + "/xml/" +
@@ -385,7 +384,7 @@ class BookContainer(object):
     def get_page_last_char_index(self, pagenumber):
         fulltext_length = len(self.plaintext)
         if pagenumber < len(self.first_char_page_index_by_page):
-            return self.first_char_page_index_by_page[pagenumber] - 1
+            return self.first_char_page_index_by_page[pagenumber + 1] - 1
         else:
             return (fulltext_length - 1)
 
@@ -514,21 +513,21 @@ class BookContainer(object):
     def filter_pagetext_list_headers(self, pagetext_list):
         filtered_list = list()
         potential_skipline = ""
-
+        #
         for line in pagetext_list:
-
-            if line[0:2] == "# " or line[0:3] == "## ":
+            #
+            if (line[0:2] == "# " or line[0:3] == "## ") and len(line) > 7:
                 potential_skipline = line
-
+            #
             elif len(potential_skipline) != 0:
                 if line != "\n":
                     filtered_list.append(potential_skipline)
                     filtered_list.append(line)
                 potential_skipline = ""
-
+            #
             else:
                 filtered_list.append(line)
-
+        #
         return filtered_list
 
     def set_fulltext_page_char_index(self):
@@ -572,7 +571,7 @@ class BookContainer(object):
         else:
             write_plaintext_mismatch(
                 self.plaintext, combined_text,
-                "/home/vvaara/projects/comhis/text-reuse/temp/")
+                "../output/logs/")
             sys.exit(">>> ERROR! Page indices do not match for docid " +
                      self.octavo_id)
 

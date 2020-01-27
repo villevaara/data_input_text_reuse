@@ -66,14 +66,15 @@ def write_json_results(outdata, jsonfile):
         jsonfile.write(jsonstring)
 
 
-def get_ecco_id_dict(re_create=False):
-    if os.path.exists('../data/work/ecco_dict.csv') and not re_create:
+def get_ecco_id_dict(re_create=False,
+                     csv_location='../data/work/ecco_dict.csv'):
+    if os.path.exists(csv_location) and not re_create:
         print("using existing ecco_dict.csv")
         ecco_dict = {}
-        with open('../data/work/ecco_dict.csv', 'r') as eccocsv:
+        with open(csv_location, 'r') as eccocsv:
             reader = csv.DictReader(eccocsv)
             for row in reader:
-                ecco_dict[row['ecco_id']] = row['path']
+                ecco_dict[row['id']] = row['path']
     else:
         print("getting ecco dict on the fly")
         ecco_dict = ecco_index.get_ecco_dict()
