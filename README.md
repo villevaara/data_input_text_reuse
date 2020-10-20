@@ -39,7 +39,3 @@ Turn finished text reuse data (indices in csv files) back to json with actual te
 ## Usage
 
 `python generate_json.py --datadir DATADIR HERE --outdir OUTPUTDIR HERE --iter ITERATION NUMBER TO PROCESS`  
-
-Whole text data needs to be in data/
-
-
