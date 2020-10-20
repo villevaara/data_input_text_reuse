@@ -14,3 +14,13 @@ python blast_batches.py --batch_folder="../../output/export" --output_folder="..
 ### one go
 
 python run_full.py --data_folder="../../data/raw" --output_folder="../../output/blast_simple" --language="ENG" --threads=1
+
+## Custom BLAST
+
+BLAST was adjusted by A. Vesanto for the text reuse task. The version provided was 2.5.0 which unfortunately had a bug in multithreaded processing, and another version needed to be modified for processing EEBO and ECCO. The version was 2.6.0 found at http://www.repeatmasker.org/ under `RMBlast 2.6.0 BUGFIX`, with the BUGFIX patch applied. Corresponding changes were then applied to the two modifed files:
+
+`c++/src/util/tables/sm_blosum62.c`
+`c++/src/algo/blast/core/blast_stat.c`
+
+These files are attached under `blast/` in this documentation directory.
+The pre-packaged custom version of BLAST is also attached under the same directory.

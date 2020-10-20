@@ -1,4 +1,6 @@
 import os
+import tarfile
+from lib.helpers import create_dir_if_not_exists
 
 
 def read_blast_cluster_csv(blast_batch_file):
@@ -34,3 +36,33 @@ def get_blast_data_filenames(rootdir="../data/work/blast_batches/"):
             valid_files.append(
                 os.path.abspath(rootdir + file))
     return valid_files
+
+
+def extract_tar_datafiles(rootdir="../data/work/blast_batches/"):
+    dirfiles = os.listdir(rootdir)
+    for file in dirfiles:
+        if file.startswith('iter_') and file.endswith('.tar.gz'):
+            tar = tarfile.open(rootdir + "/" + file, "r:gz")
+            tar.extractall(path=rootdir)
+            tar.close()
+            print("Extracted: " + file)
+
+
+def get_tar_datafiles(rootdir="../data/work/blast_batches/"):
+    dirfiles = os.listdir(rootdir)
+    tarfiles = []
+    for file in dirfiles:
+        if file.startswith('iter_') and file.endswith('.tar.gz'):
+            tarfiles.append(rootdir + "/" + file)
+    return tarfiles
+
+
+def extract_single_tar_datafiles(tarpath):
+    tar = tarfile.open(tarpath, "r:gz")
+    itername = tarpath.split("/")[-1].split(".")[0]
+    temp_path = os.path.dirname(tarpath) + "/tmp/" + itername + "/"
+    create_dir_if_not_exists(temp_path)
+    tar.extractall(path=temp_path)
+    tar.close()
+    print("Extracted: " + tarpath + " in: " + temp_path)
+    return temp_path

@@ -20,6 +20,26 @@ And EEBO would look like:
 ...
 ```
 
+## Create index to ECCO and EEBO texts
+
+Example:
+
+`python ecco_index.py --eccodir "/home/local/vvaara/projects/comhis/data_input_text_reuse/data/raw/eccotxt/" --eebodir "/home/local/vvaara/projects/comhis/data_input_text_reuse/data/raw/eebotxt/"`
+
+
 ## Usage
 
 `python create_json.py -i doc_ids_hume.txt -o hume_history_for_text_reuse.json`
+
+
+# Output data generator
+
+Turn finished text reuse data (indices in csv files) back to json with actual text indices, fragments of texts and text ids.
+
+## Usage
+
+`python generate_json.py --datadir DATADIR HERE --outdir OUTPUTDIR HERE --iter ITERATION NUMBER TO PROCESS`  
+
+Whole text data needs to be in data/
+
+

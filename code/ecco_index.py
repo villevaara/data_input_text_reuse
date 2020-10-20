@@ -1,6 +1,7 @@
 import os
 from fnmatch import fnmatch
 import csv
+import argparse
 
 
 def get_ecco_dict(root='../data/raw/eccotxt'):
@@ -172,9 +173,15 @@ def write_all_doc_ids(all_doc_ids, outfile):
 
 
 def main():
-    ecco_out_data = get_ecco_dict()
+    parser = argparse.ArgumentParser(
+        description="Create index files for ECCO and EEBO texts.")
+    parser.add_argument("--eccodir", help="ECCO datadir", required=True)
+    parser.add_argument("--eebodir", help="EEBO datadir", required=True)
+    args = parser.parse_args()
+
+    ecco_out_data = get_ecco_dict(root=args.eccodir)
     write_eccodict("../data/work/ecco_dict.csv", ecco_out_data)
-    eebo_dict = get_eebo_dict()
+    eebo_dict = get_eebo_dict(root=args.eebodir)
     write_eccodict("../data/work/eebo_dict.csv", eebo_dict)
 
 
