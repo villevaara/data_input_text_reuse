@@ -174,18 +174,22 @@ class DataProcessorDB:
         return ready_data
         # self.ready_data.extend(ready_data)
 
-    def get_batch_jsondata_db(self, input_data):
+    def get_batch_jsondata_db(self, input_data, verbose=False):
         orig_db = lmdb.open(self.db_loc, readonly=True)
         o_db = orig_db.begin()
         textenc = TextEncoder("eng")
         batchdata = blastdr.read_blast_cluster_csv_inmem(input_data)
         i = 0
         max_i = len(batchdata)
+        if max_i > 0:
+            print("    -- Processing text: " + batchdata[0]['source_id'] +
+                  " - len: " + str(max_i))
         outdata = []
         for item in batchdata:
-            i += 1
-            if i % 100 == 0:
-                print("   --- " + str(i) + "/" + str(max_i))
+            if verbose:
+                i += 1
+                if i % 100 == 0:
+                    print("   --- " + str(i) + "/" + str(max_i))
             blastpair = BlastPairDB(item, textenc)
             blastpair.set_correct_indices_and_texts(o_db)
             outdata.append(blastpair.get_outdict())
@@ -220,7 +224,7 @@ def process_batch_files_db(batchdir, outputdir, db_loc, threads, this_iter):
     tarfile_out.addfile(
         tarinfo=tarinfo, fileobj=BytesIO(s.getvalue().encode('utf-8')))
     tarfile_out.close()
-    print("   --- wrote: " + tarout_fname)
+    print("  -- Wrote: " + tarout_fname)
 
 
 parser = argparse.ArgumentParser(description="Decode indices back to text.")
@@ -242,8 +246,8 @@ thisiter = args.iter
 threads = args.threads
 db_loc = args.db
 
-db_loc = ('/media/vvaara/My Passport/worktemp/txt_reuse/txt_reuse/' +
-          'blast_work_from_puhti/blast_work/db/original_data_DB')
+# db_loc = ('/media/vvaara/My Passport/worktemp/txt_reuse/txt_reuse/' +
+#           'blast_work_from_puhti/blast_work/db/original_data_DB/')
 
 create_dir_if_not_exists(outputdir)
 
@@ -259,7 +263,14 @@ if thisiter == -1:
 else:
     all_iter = thisiter
 
-print("start:", datetime.now())
+print("Generating final JSON for text reuse data. Args:")
+print("Input dir  : " + inputdir)
+print("Output dir : " + outputdir)
+print("Iteration  : " + str(thisiter))
+print("Threads    : " + str(threads))
+print("DB Location: " + db_loc)
+
+print("\nStart time:", datetime.now())
 start_time = time()
 
 # ECCO = 61GB
@@ -279,11 +290,11 @@ for current_iter in all_iter:
     if current_iter in processed_iters:
         continue
     else:
-        print("   --- processing iter: " + str(current_iter))
+        print("\nProcessing iter: " + str(current_iter))
         process_batch_files_db(inputdir, outputdir, db_loc,
                                threads, current_iter)
         with open(processed_iters_txt, 'a') as logfile:
             logfile.write(str(current_iter) + "\n")
 
-print("end:", datetime.now())
-print("elapsed:", str(timedelta(seconds=(int(time()-start_time)))))
+print("\nEnd time:", datetime.now())
+print("Elapsed:", str(timedelta(seconds=(int(time()-start_time)))))

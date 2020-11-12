@@ -97,18 +97,12 @@ def extract_single_tar_datafiles(tarpath):
 
 def get_single_tar_contents(tarpath):
     tar = tarfile.open(tarpath, "r:gz")
-    # itername = tarpath.split("/")[-1].split(".")[0]
-    # temp_path = os.path.dirname(tarpath) + "/tmp/" + itername + "/"
-    # create_dir_if_not_exists(temp_path)
     all_contents = []
-    # i = 0
     for member in tar.getmembers():
-        # print(member.name.split("/")[-1].split(".")[0])
         f = tar.extractfile(member)
         if f is not None:
             contents = f.read()
             all_contents.append(contents)
-    # tar.extractall(path=temp_path)
     tar.close()
-    print("Extracted data in: " + tarpath)
+    print("  -- Extracted data in: " + tarpath)
     return all_contents
