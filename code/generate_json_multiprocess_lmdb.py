@@ -248,9 +248,6 @@ db_loc = args.db
 
 create_dir_if_not_exists(outputdir)
 
-ecco_dict_csv = "../data/work/ecco_dict.csv"
-eebo_dict_csv = "../data/work/eebo_dict.csv"
-
 if thisiter == -1:
     all_tarfiles = blastdr.get_tar_datafiles(inputdir)
     all_iter = []
@@ -280,8 +277,9 @@ if os.path.isfile(processed_iters_txt):
     with open(processed_iters_txt, 'r') as pros_iters_f:
         items = pros_iters_f.readlines()
         for item in items:
-            if item.isdigit():
-                processed_iters.append(int(item))
+            # print(item)
+            if item.strip().isdigit():
+                processed_iters.append(int(item.strip()))
 
 for current_iter in all_iter:
     if current_iter in processed_iters:
