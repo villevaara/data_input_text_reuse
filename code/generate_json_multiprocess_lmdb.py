@@ -178,9 +178,10 @@ class DataProcessorDB:
         batchdata = blastdr.read_blast_cluster_csv_inmem(input_data)
         i = 0
         max_i = len(batchdata)
-        if max_i > 0:
-            print("    -- Processing text: " + batchdata[0]['source_id'] +
-                  " - len: " + str(max_i))
+        if verbose:
+            if max_i > 0:
+                print("    -- Processing text: " + batchdata[0]['source_id'] +
+                      " - len: " + str(max_i))
         outdata = []
         for item in batchdata:
             if verbose:
@@ -255,7 +256,7 @@ if thisiter == -1:
         fname_iter = int(fname.split("iter_")[-1].split(".")[0])
         all_iter.append(fname_iter)
 else:
-    all_iter = thisiter
+    all_iter = [thisiter]
 
 print("Generating final JSON for text reuse data. Args:")
 print("Input dir  : " + inputdir)
