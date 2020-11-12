@@ -6,7 +6,6 @@ import lib.blast_datareader as blastdr
 import csv
 import os
 import ecco_index
-# import shutil
 from os import listdir
 import argparse
 import tarfile
@@ -15,8 +14,6 @@ from io import BytesIO
 from datetime import datetime
 from datetime import timedelta
 from time import time
-# from collections import OrderedDict
-from multiprocessing import Pool
 import lmdb
 
 
