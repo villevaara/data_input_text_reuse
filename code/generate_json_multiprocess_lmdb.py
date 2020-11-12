@@ -277,7 +277,6 @@ if os.path.isfile(processed_iters_txt):
     with open(processed_iters_txt, 'r') as pros_iters_f:
         items = pros_iters_f.readlines()
         for item in items:
-            # print(item)
             if item.strip().isdigit():
                 processed_iters.append(int(item.strip()))
 
