@@ -164,46 +164,34 @@ def get_frag_json_fname(input_fname):
 class DataProcessorDB:
     def __init__(self, db_loc):
         self.db_loc = db_loc
-        # self.ready_data = []
-
-    def process_single_item(self, batch_item):
-        ready_data = self.get_batch_jsondata_db(batch_item)
-        return ready_data
-        # self.ready_data.extend(ready_data)
 
     def get_batch_jsondata_db(self, input_data, verbose=False):
+        all_data = []
+        for item in input_data:
+            batchdata = blastdr.read_blast_cluster_csv_inmem(item)
+            if len(batchdata) > 0:
+                all_data.extend(batchdata)
+        if len(all_data) > 0:
+            print("    -- Processing data - len: " + str(len(all_data)))
+        outdata = Parallel(n_jobs=threads)(
+            delayed(self.get_blastpair_data)(item) for item in all_data)
+        return outdata
+
+    def get_blastpair_data(self, item):
         orig_db = lmdb.open(self.db_loc, readonly=True)
         o_db = orig_db.begin()
         textenc = TextEncoder("eng")
-        batchdata = blastdr.read_blast_cluster_csv_inmem(input_data)
-        i = 0
-        max_i = len(batchdata)
-        if verbose:
-            if max_i > 0:
-                print("    -- Processing text: " + batchdata[0]['source_id'] +
-                      " - len: " + str(max_i))
-        outdata = []
-        for item in batchdata:
-            if verbose:
-                i += 1
-                if i % 100 == 0:
-                    print("   --- " + str(i) + "/" + str(max_i))
-            blastpair = BlastPairDB(item, textenc)
-            blastpair.set_correct_indices_and_texts(o_db)
-            outdata.append(blastpair.get_outdict())
-        return outdata
+        blastpair = BlastPairDB(item, textenc)
+        blastpair.set_correct_indices_and_texts(o_db)
+        return blastpair.get_outdict()
 
 
 def process_batch_files_db(batchdir, outputdir, db_loc, threads, this_iter):
     this_tar = batchdir + "/iter_" + str(this_iter) + ".tar.gz"
     batch_data = blastdr.get_single_tar_contents(this_tar)
-    #
-    # pool = Pool()
-    # ready_data = []
     dataprocessor = DataProcessorDB(db_loc)
-    # ready_data = pool.map(dataprocessor.process_single_item, batch_data)
-    ready_data = Parallel(n_jobs=threads)(
-        delayed(dataprocessor.get_batch_jsondata_db)(item) for item in batch_data)
+    #
+    ready_data = dataprocessor.get_batch_jsondata_db(batch_data)
     ready_data_final = []
     for item in ready_data:
         if len(item) != 0:
@@ -282,8 +270,9 @@ if os.path.isfile(processed_iters_txt):
                 processed_iters.append(int(item.strip()))
 
 for current_iter in all_iter:
-    if current_iter in processed_iters:
-        continue
+    if iter == -1:
+        if current_iter in processed_iters:
+            continue
     else:
         print("\nProcessing iter: " + str(current_iter))
         process_batch_files_db(inputdir, outputdir, db_loc,
