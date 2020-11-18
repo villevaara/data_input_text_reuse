@@ -246,7 +246,7 @@ if thisiter == -1:
 else:
     all_iter = [thisiter]
 
-print("Generating final JSON for text reuse data. Args:")
+print("\nGenerating final JSON for text reuse data. Args:")
 print("Input dir  : " + inputdir)
 print("Output dir : " + outputdir)
 print("Iteration  : " + str(thisiter))
@@ -272,9 +272,10 @@ if os.path.isfile(processed_iters_txt):
 for current_iter in all_iter:
     if iter == -1:
         if current_iter in processed_iters:
+            print("Skipping already processed iter: " + str(current_iter))
             continue
     else:
-        print("\nProcessing iter: " + str(current_iter))
+        print("Processing iter: " + str(current_iter))
         process_batch_files_db(inputdir, outputdir, db_loc,
                                threads, current_iter)
         with open(processed_iters_txt, 'a') as logfile:
