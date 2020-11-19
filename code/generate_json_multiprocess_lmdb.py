@@ -259,11 +259,11 @@ else:
 processed_iters = get_processed_iters_from_output_path(outputdir)
 iters_to_process = []
 for current_iter in all_iter:
-    if iter == -1:
+    if thisiter == -1:
         if current_iter in processed_iters:
             continue
-    else:
-        iters_to_process.append(current_iter)
+        else:
+            iters_to_process.append(current_iter)
 iters_to_process.sort()
 
 print("\nGenerating final JSON for text reuse data. Args:")
