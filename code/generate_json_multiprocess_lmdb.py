@@ -255,12 +255,25 @@ if thisiter == -1:
 else:
     all_iter = [thisiter]
 
+# Check outputdir for already processed iterations. Skip these.
+processed_iters = get_processed_iters_from_output_path(outputdir)
+iters_to_process = []
+for current_iter in all_iter:
+    if iter == -1:
+        if current_iter in processed_iters:
+            continue
+    else:
+        iters_to_process.append(current_iter)
+
+
 print("\nGenerating final JSON for text reuse data. Args:")
 print("Input dir  : " + inputdir)
 print("Output dir : " + outputdir)
 print("Iteration  : " + str(thisiter))
 print("Threads    : " + str(threads))
 print("DB Location: " + db_loc)
+print("Iters to pr: " + len(iters_to_process))
+print("Iters all  : " + len(all_iter))
 
 print("\nStart time:", datetime.now())
 start_time = time()
@@ -268,18 +281,10 @@ start_time = time()
 # ECCO = 61GB
 # EEBO = 10GB
 
-# Check outputdir for already processed iterations. Skip these.
-processed_iters = get_processed_iters_from_output_path(outputdir)
-
-for current_iter in all_iter:
-    if iter == -1:
-        if current_iter in processed_iters:
-            print("Skipping already processed iter: " + str(current_iter))
-            continue
-    else:
-        print("Processing iter: " + str(current_iter))
-        process_batch_files_db(inputdir, outputdir, db_loc,
-                               threads, current_iter)
+for current_iter in iters_to_process:
+    print("Processing iter: " + str(current_iter))
+    process_batch_files_db(inputdir, outputdir, db_loc,
+                           threads, current_iter)
 
 print("\nEnd time:", datetime.now())
 print("Elapsed:", str(timedelta(seconds=(int(time()-start_time)))))
