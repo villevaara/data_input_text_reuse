@@ -213,6 +213,15 @@ def process_batch_files_db(batchdir, outputdir, db_loc, threads, this_iter):
     print("  -- Wrote: " + tarout_fname)
 
 
+def get_processed_iters_from_output_path(outputdir):
+    files_in_outdir = os.listdir(outputdir)
+    processed_iters = []
+    for file in files_in_outdir:
+        if file[-6:] == "tar.gz" and file[:4] == "iter":
+            processed_iters.append(int(file.split("_")[1]))
+    return processed_iters
+
+
 parser = argparse.ArgumentParser(description="Decode indices back to text.")
 parser.add_argument("--datadir", help="Input datadir", required=True)
 parser.add_argument("--outdir", help="Output datadir", required=True)
@@ -259,15 +268,8 @@ start_time = time()
 # ECCO = 61GB
 # EEBO = 10GB
 
-# setup progress logging.
-processed_iters = []
-processed_iters_txt = "../data/work/final_json_processed_iters.txt"
-if os.path.isfile(processed_iters_txt):
-    with open(processed_iters_txt, 'r') as pros_iters_f:
-        items = pros_iters_f.readlines()
-        for item in items:
-            if item.strip().isdigit():
-                processed_iters.append(int(item.strip()))
+# Check outputdir for already processed iterations. Skip these.
+processed_iters = get_processed_iters_from_output_path(outputdir)
 
 for current_iter in all_iter:
     if iter == -1:
@@ -278,8 +280,6 @@ for current_iter in all_iter:
         print("Processing iter: " + str(current_iter))
         process_batch_files_db(inputdir, outputdir, db_loc,
                                threads, current_iter)
-        with open(processed_iters_txt, 'a') as logfile:
-            logfile.write(str(current_iter) + "\n")
 
 print("\nEnd time:", datetime.now())
 print("Elapsed:", str(timedelta(seconds=(int(time()-start_time)))))
