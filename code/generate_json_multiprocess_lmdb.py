@@ -264,7 +264,7 @@ for current_iter in all_iter:
             continue
     else:
         iters_to_process.append(current_iter)
-
+iters_to_process.sort()
 
 print("\nGenerating final JSON for text reuse data. Args:")
 print("Input dir  : " + inputdir)
