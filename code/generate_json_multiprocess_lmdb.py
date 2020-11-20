@@ -15,6 +15,7 @@ from datetime import datetime
 from datetime import timedelta
 from time import time
 import lmdb
+import tqdm
 
 
 def read_txt(text_file_loc):
@@ -174,7 +175,7 @@ class DataProcessorDB:
         if len(all_data) > 0:
             print("    -- Processing data - len: " + str(len(all_data)))
         outdata = Parallel(n_jobs=threads)(
-            delayed(self.get_blastpair_data)(item) for item in all_data)
+            delayed(self.get_blastpair_data)(item) for item in tqdm(all_data))
         return outdata
 
     def get_blastpair_data(self, item):

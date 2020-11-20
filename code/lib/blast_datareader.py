@@ -1,6 +1,7 @@
 import os
 import tarfile
 from lib.helpers import create_dir_if_not_exists
+from collections import Counter
 
 
 def read_blast_cluster_csv_inmem(blastdata):
@@ -31,6 +32,34 @@ def read_blast_cluster_csv_inmem(blastdata):
                     'positives_percent': float(linesplit[6])
                 })
     return outlist
+
+
+def validata_blast_batch(batchdata_bits):
+    batchdata_utf8_list = batchdata_bits.decode("utf-8").split("\n")
+    if len(batchdata_utf8_list) < 6:
+        return {'validates': False, 'reason': "Length < 6 rows."}
+    if batchdata_utf8_list[0][0:8] != "# BLASTP":
+        return {'validates': False, 'reason': 'Invalid header.'}
+    if batchdata_utf8_list[-2] != "# BLAST processed 1 queries":
+        return {'validates': False, 'reason': 'Invalid footer.'}
+    return {'validates': True, 'reason': ''}
+
+
+def validate_blast_iter_data(tarfile_loc):
+    iterdata = get_single_tar_contents(tarfile_loc)
+    n_bad = 0
+    reasons = []
+    for item in iterdata:
+        item_validates = validata_blast_batch(item)
+        if item_validates['validates'] is False:
+            n_bad += 1
+            reasons.append(item_validates['reason'])
+    counts = dict(Counter(reasons))
+    if n_bad > 0:
+        iter_validates = False
+    else:
+        iter_validates = True
+    return {'validates': iter_validates, 'reasons': counts, 'n_bad': n_bad}
 
 
 def read_blast_cluster_csv(blast_batch_file):
