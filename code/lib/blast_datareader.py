@@ -17,16 +17,19 @@ def read_blast_cluster_csv_inmem(blastdata):
             continue
         else:
             linesplit = line.strip("\n").split("\t")
-            outlist.append({
-                'source_id': str(source_id),
-                'source_start_blast': int(linesplit[1]),
-                'source_end_blast': int(linesplit[2]),
-                'target_id': str(linesplit[0]),
-                'target_start_blast': int(linesplit[3]),
-                'target_end_blast': int(linesplit[4]),
-                'align_length': int(linesplit[5]),
-                'positives_percent': float(linesplit[6])
-            })
+            if len(linesplit) != 7:
+                continue
+            else:
+                outlist.append({
+                    'source_id': str(source_id),
+                    'source_start_blast': int(linesplit[1]),
+                    'source_end_blast': int(linesplit[2]),
+                    'target_id': str(linesplit[0]),
+                    'target_start_blast': int(linesplit[3]),
+                    'target_end_blast': int(linesplit[4]),
+                    'align_length': int(linesplit[5]),
+                    'positives_percent': float(linesplit[6])
+                })
     return outlist
 
 
@@ -106,3 +109,4 @@ def get_single_tar_contents(tarpath):
     tar.close()
     print("  -- Extracted data in: " + tarpath)
     return all_contents
+
