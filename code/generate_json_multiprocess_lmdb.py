@@ -15,7 +15,7 @@ from datetime import datetime
 from datetime import timedelta
 from time import time
 import lmdb
-import tqdm
+from tqdm import tqdm
 
 
 def read_txt(text_file_loc):
@@ -260,11 +260,10 @@ else:
 processed_iters = get_processed_iters_from_output_path(outputdir)
 iters_to_process = []
 for current_iter in all_iter:
-    if thisiter == -1:
-        if current_iter in processed_iters:
-            continue
-        else:
-            iters_to_process.append(current_iter)
+    if thisiter == -1 and current_iter in processed_iters:
+        continue
+    else:
+        iters_to_process.append(current_iter)
 iters_to_process.sort()
 
 print("\nGenerating final JSON for text reuse data. Args:")
