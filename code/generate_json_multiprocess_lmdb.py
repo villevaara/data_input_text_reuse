@@ -198,7 +198,7 @@ class DataProcessorDB:
         return retdata
 
     def get_blastpair_data(self, item):
-        orig_db = lmdb.open(self.db_loc, readonly=True)
+        orig_db = lmdb.open(self.db_loc, readonly=True, lock=False)
         o_db = orig_db.begin()
         textenc = TextEncoder("eng")
         blastpair = BlastPairDB(item, textenc)
@@ -206,7 +206,7 @@ class DataProcessorDB:
         return blastpair.get_outdict()
 
     def get_blastpair_group_data(self, blastpair_group):
-        orig_db = lmdb.open(self.db_loc, readonly=True)
+        orig_db = lmdb.open(self.db_loc, readonly=True, lock=False)
         o_db = orig_db.begin()
         textenc = TextEncoder("eng")
         group_outdata = []
