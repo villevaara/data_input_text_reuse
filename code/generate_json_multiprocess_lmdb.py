@@ -200,7 +200,7 @@ def process_batch_files_db(
     dataprocessor = DataProcessorDB(db_loc)
     #
     ready_data = dataprocessor.get_batch_jsondata_db(
-        batch_data, use_tqdm)
+        batch_data, use_tqdm=use_tqdm)
     ready_data_final = []
     for item in ready_data:
         if len(item) != 0:
