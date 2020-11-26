@@ -166,7 +166,7 @@ class DataProcessorDB:
     def __init__(self, db_loc):
         self.db_loc = db_loc
 
-    def get_batch_jsondata_db(self, input_data, verbose=False):
+    def get_batch_jsondata_db(self, input_data, verbose=False, use_tqdm=False):
         all_data = []
         for item in input_data:
             batchdata = blastdr.read_blast_cluster_csv_inmem(item)
@@ -174,8 +174,14 @@ class DataProcessorDB:
                 all_data.extend(batchdata)
         if len(all_data) > 0:
             print("    -- Processing data - len: " + str(len(all_data)))
-        outdata = Parallel(n_jobs=threads)(
-            delayed(self.get_blastpair_data)(item) for item in tqdm(all_data))
+        if use_tqdm:
+            outdata = Parallel(n_jobs=threads)(
+                delayed(
+                    self.get_blastpair_data)(item) for item in tqdm(all_data))
+        else:
+            outdata = Parallel(n_jobs=threads)(
+                delayed(
+                    self.get_blastpair_data)(item) for item in all_data)
         return outdata
 
     def get_blastpair_data(self, item):
@@ -187,12 +193,14 @@ class DataProcessorDB:
         return blastpair.get_outdict()
 
 
-def process_batch_files_db(batchdir, outputdir, db_loc, threads, this_iter):
+def process_batch_files_db(
+        batchdir, outputdir, db_loc, threads, this_iter, use_tqdm):
     this_tar = batchdir + "/iter_" + str(this_iter) + ".tar.gz"
     batch_data = blastdr.get_single_tar_contents(this_tar)
     dataprocessor = DataProcessorDB(db_loc)
     #
-    ready_data = dataprocessor.get_batch_jsondata_db(batch_data)
+    ready_data = dataprocessor.get_batch_jsondata_db(
+        batch_data, use_tqdm)
     ready_data_final = []
     for item in ready_data:
         if len(item) != 0:
@@ -234,13 +242,20 @@ parser.add_argument(
     type=int, default=1)
 parser.add_argument(
     "--db", help="Location of LMDB database for texts", required=True)
+parser.add_argument('--tqdm', help="Display progress with tqdm.",
+                    dest='tqdm', action='store_true')
+parser.add_argument('--no-tqdm',  help="Do noty display progress with tqdm.",
+                    dest='tqdm', action='store_false')
+parser.set_defaults(tqdm=False)
 args = parser.parse_args()
+
 
 inputdir = args.datadir + "/"
 outputdir = args.outdir + "/"
 thisiter = args.iter
 threads = args.threads
 db_loc = args.db
+use_tqdm = args.tqdm
 
 # db_loc = ('/media/vvaara/My Passport/worktemp/txt_reuse/txt_reuse/' +
 #           'blast_work_from_puhti/blast_work/db/original_data_DB/')
@@ -285,7 +300,7 @@ start_time = time()
 for current_iter in iters_to_process:
     print("Processing iter: " + str(current_iter))
     process_batch_files_db(inputdir, outputdir, db_loc,
-                           threads, current_iter)
+                           threads, current_iter, use_tqdm)
 
 print("\nEnd time:", datetime.now())
 print("Elapsed:", str(timedelta(seconds=(int(time()-start_time)))))
