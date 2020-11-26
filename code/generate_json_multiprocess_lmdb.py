@@ -166,7 +166,8 @@ class DataProcessorDB:
     def __init__(self, db_loc):
         self.db_loc = db_loc
 
-    def get_batch_jsondata_db(self, input_data, verbose=False, use_tqdm=False):
+    def get_batch_jsondata_db(self, input_data, threads,
+                              verbose=False, use_tqdm=False):
         all_data = []
         for item in input_data:
             batchdata = blastdr.read_blast_cluster_csv_inmem(item)
@@ -174,15 +175,27 @@ class DataProcessorDB:
                 all_data.extend(batchdata)
         if len(all_data) > 0:
             print("    -- Processing data - len: " + str(len(all_data)))
+        else:
+            return []
+        all_data_div = []
+        group_size = 100
+        start_i = 0
+        while start_i < len(all_data):
+            all_data_div.append(all_data[start_i:min(
+                start_i + group_size, len(all_data))])
+            start_i += group_size
         if use_tqdm:
             outdata = Parallel(n_jobs=threads)(
-                delayed(
-                    self.get_blastpair_data)(item) for item in tqdm(all_data))
+                delayed(self.get_blastpair_group_data)(item)
+                for item in tqdm(all_data_div))
         else:
             outdata = Parallel(n_jobs=threads)(
-                delayed(
-                    self.get_blastpair_data)(item) for item in all_data)
-        return outdata
+                delayed(self.get_blastpair_group_data)(item)
+                for item in all_data_div)
+        retdata = []
+        for item in outdata:
+            retdata.extend(item)
+        return retdata
 
     def get_blastpair_data(self, item):
         orig_db = lmdb.open(self.db_loc, readonly=True)
@@ -192,6 +205,17 @@ class DataProcessorDB:
         blastpair.set_correct_indices_and_texts(o_db)
         return blastpair.get_outdict()
 
+    def get_blastpair_group_data(self, blastpair_group):
+        orig_db = lmdb.open(self.db_loc, readonly=True)
+        o_db = orig_db.begin()
+        textenc = TextEncoder("eng")
+        group_outdata = []
+        for item in blastpair_group:
+            blastpair = BlastPairDB(item, textenc)
+            blastpair.set_correct_indices_and_texts(o_db)
+            group_outdata.append(blastpair.get_outdict())
+        return group_outdata
+
 
 def process_batch_files_db(
         batchdir, outputdir, db_loc, threads, this_iter, use_tqdm):
@@ -200,7 +224,7 @@ def process_batch_files_db(
     dataprocessor = DataProcessorDB(db_loc)
     #
     ready_data = dataprocessor.get_batch_jsondata_db(
-        batch_data, use_tqdm=use_tqdm)
+        batch_data, threads, use_tqdm=use_tqdm)
     ready_data_final = []
     for item in ready_data:
         if len(item) != 0:
@@ -302,5 +326,5 @@ for current_iter in iters_to_process:
     process_batch_files_db(inputdir, outputdir, db_loc,
                            threads, current_iter, use_tqdm)
 
-print("\nEnd time:", datetime.now())
+print("\nEnd tim e:", datetime.now())
 print("Elapsed:", str(timedelta(seconds=(int(time()-start_time)))))
