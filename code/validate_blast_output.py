@@ -23,9 +23,10 @@ for tarfile in tarfiles_in_path:
     this_iter = int(tarfile.split("iter_")[-1].split(".")[0])
     if validates['validates'] is not True:
         bad_results.append({
-            'iter': this_iter, 'n_bad': validates['n_bad']})
+            'iter': this_iter, 'n_bad': validates['n_bad'],
+            'reasons': validates['reasons']})
         print("\n!! iter: " + str(this_iter) +
-              "n_bad:" + str(validates['n_bad']) + "\n")
+              " - n_bad: " + str(validates['n_bad']) + "\n")
 
 br_sorted = sorted(bad_results, key=lambda k: k['iter'])
 
@@ -33,7 +34,7 @@ datestring = date.today().strftime("%y%d%m")
 log_fname = args.logdir + '/iters_invalid_' + datestring + '.csv'
 
 with open(log_fname, 'w', newline='') as csvfile:
-    fieldnames = ['iter', 'n_bad']
+    fieldnames = ['iter', 'n_bad', 'reasons']
     writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
     writer.writeheader()
     for item in br_sorted:

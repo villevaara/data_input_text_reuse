@@ -2,6 +2,7 @@ import os
 import tarfile
 from lib.helpers import create_dir_if_not_exists
 from collections import Counter
+import json
 
 
 def read_blast_cluster_csv_inmem(blastdata):
@@ -36,12 +37,12 @@ def read_blast_cluster_csv_inmem(blastdata):
 
 def validata_blast_batch(batchdata_bits):
     batchdata_utf8_list = batchdata_bits.decode("utf-8").split("\n")
-    if len(batchdata_utf8_list) < 6:
-        return {'validates': False, 'reason': "Length < 6 rows."}
     if batchdata_utf8_list[0][0:8] != "# BLASTP":
         return {'validates': False, 'reason': 'Invalid header.'}
     if batchdata_utf8_list[-2] != "# BLAST processed 1 queries":
         return {'validates': False, 'reason': 'Invalid footer.'}
+    if len(batchdata_utf8_list) < 6:
+        return {'validates': False, 'reason': "Length < 6 rows."}
     return {'validates': True, 'reason': ''}
 
 
@@ -134,6 +135,19 @@ def get_single_tar_contents(tarpath):
         f = tar.extractfile(member)
         if f is not None:
             contents = f.read()
+            all_contents.append(contents)
+    tar.close()
+    print("  -- Extracted data in: " + tarpath)
+    return all_contents
+
+
+def get_single_tar_json_contents(tarpath):
+    tar = tarfile.open(tarpath, "r:gz")
+    all_contents = []
+    for member in tar.getmembers():
+        f = tar.extractfile(member)
+        if f is not None:
+            contents = json.load(f)
             all_contents.append(contents)
     tar.close()
     print("  -- Extracted data in: " + tarpath)
