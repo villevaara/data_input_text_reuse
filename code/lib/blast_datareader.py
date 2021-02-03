@@ -141,9 +141,24 @@ def get_single_tar_contents(tarpath):
     return all_contents
 
 
-def get_single_tar_json_contents(tarpath):
-    tar = tarfile.open(tarpath, "r:gz")
+def get_single_tar_json_contents(tarpath, logfile):
+    try:
+        tar = tarfile.open(tarpath, "r:gz")
+    except Exception:
+        with open(logfile, 'a') as logtxt:
+            logtxt.write(
+                tarpath.split("/")[-1] + " - Error in opening file.\n")
+        return None
+
     all_contents = []
+    try:
+        tar.getmembers()
+    except Exception:
+        with open(logfile, 'a') as logtxt:
+            logtxt.write(
+                tarpath.split("/")[-1] + " - Error in getting tar members.\n")
+        return None
+
     for member in tar.getmembers():
         f = tar.extractfile(member)
         if f is not None:
@@ -152,4 +167,3 @@ def get_single_tar_json_contents(tarpath):
     tar.close()
     print("  -- Extracted data in: " + tarpath)
     return all_contents
-
