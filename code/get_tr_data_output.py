@@ -1,4 +1,5 @@
 from lib.blast_datareader import get_single_tar_json_contents
+from lib.helpers import create_dir_if_not_exists
 import json
 import sys
 import csv
@@ -43,20 +44,39 @@ def save_outputdata_json(outputdata, outputfname):
     print("Wrote output at: " + outputfname)
 
 
+def get_single_input_output(input_filename):
+    outputdata = []
+    tar_cont = get_single_tar_json_contents(filename)
+    for item in tar_cont:
+        data_found = False
+        if item['text1_id'] == estc_id_to_get:
+            item_position = "1"
+            data_found = True
+        elif item['text2_id'] == estc_id_to_get:
+            item_position = "2"
+            data_found = True
+        if data_found:
+            fname = input_filename.split("/")[-1]
+            outputrow = get_output_row(item, item_position, fname)
+            outputdata.append(outputrow)
+    return outputdata
+
+
 parser = argparse.ArgumentParser(
     description="Fetch single ESTC id text reuse data.")
 parser.add_argument("--indexfile", help="Index file location",
                     default="../data/work/text_index.json")
 parser.add_argument("--id", help="ESTC / EEBO id of interest", required=True)
-parser.add_argument("--outputfile", help="Output file location",
-                    default="../data/work/single_tr_data.json")
+parser.add_argument("--outputpath", help="Output files location",
+                    default="../data/work/tr_output")
 args = parser.parse_args()
 
 
 index_datafile = args.indexfile
 estc_id_to_get = args.id
-outputfname = args.outputfile
+outputpath = args.outputpath
 
+create_dir_if_not_exists(outputpath)
 
 with open(index_datafile, 'r') as jsondata:
     data_index = json.load(jsondata)
@@ -67,25 +87,10 @@ if estc_id_to_get not in data_index.keys():
 
 files_of_interest = data_index[estc_id_to_get]
 
-data_of_interest = {}
 for filename in files_of_interest:
     print("Reading: " + filename)
-    tar_cont = get_single_tar_json_contents(filename)
-    data_of_interest[filename] = (tar_cont[0])
-
-
-outputdata = []
-for key, value in data_of_interest.items():
-    for item in value:
-        data_found = False
-        if item['text1_id'] == estc_id_to_get:
-            item_position = "1"
-            data_found = True
-        elif item['text2_id'] == estc_id_to_get:
-            item_position = "2"
-            data_found = True
-        if data_found:
-            outputrow = get_output_row(item, item_position, key)
-            outputdata.append(outputrow)
-
-save_outputdata_json(outputdata, outputfname)
+    outputdata = get_single_input_output(filename)
+    if len(outputdata) > 0:
+        outputfname = (
+            outputpath + "/" + filename.split("/")[-1].split(".")[0])
+        save_outputdata_json(outputdata, outputfname)
