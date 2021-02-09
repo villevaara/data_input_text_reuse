@@ -87,8 +87,11 @@ if estc_id_to_get not in data_index.keys():
 
 files_of_interest = data_index[estc_id_to_get]
 
+i = 0
+max_i = len(files_of_interest)
 for filename in files_of_interest:
-    print("Reading: " + filename)
+    i += 1
+    print("Reading " + str(i) + "/" + str(max_i) + " : " + filename)
     outputdata = get_single_input_output(filename)
     if len(outputdata) > 0:
         outputfname = (
