@@ -46,7 +46,7 @@ def save_outputdata_json(outputdata, outputfname):
 
 def get_single_input_output(input_filename):
     outputdata = []
-    tar_cont = get_single_tar_json_contents(filename)
+    tar_cont = get_single_tar_json_contents(filename)[0]
     for item in tar_cont:
         data_found = False
         if item['text1_id'] == estc_id_to_get:
@@ -95,5 +95,6 @@ for filename in files_of_interest:
     outputdata = get_single_input_output(filename)
     if len(outputdata) > 0:
         outputfname = (
-            outputpath + "/" + filename.split("/")[-1].split(".")[0])
+            outputpath + "/results_" + filename.split("/")[-1].split(".")[0] +
+            ".json")
         save_outputdata_json(outputdata, outputfname)
