@@ -90,7 +90,7 @@ with open(index_datafile, 'r') as jsondata:
 if id_to_get not in data_index.keys():
     sys.exit("ID not found in text reuse data.")
 
-files_of_interest = data_index[estc_id_to_get]
+files_of_interest = data_index[id_to_get]
 
 i = 0
 max_i = len(files_of_interest)
