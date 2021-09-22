@@ -44,15 +44,20 @@ def save_outputdata_json(outputdata, outputfname):
     print("Wrote output at: " + outputfname)
 
 
-def get_single_input_output(input_filename):
+def get_actual_eebo_id(long_eebo_part_id):
+    actual_eebo_id = long_eebo_part_id.split(".")[0]
+    return actual_eebo_id
+
+
+def get_single_input_output(input_filename, id_to_get):
     outputdata = []
     tar_cont = get_single_tar_json_contents(filename)[0]
     for item in tar_cont:
         data_found = False
-        if item['text1_id'] == estc_id_to_get:
+        if get_actual_eebo_id(item['text1_id']) == id_to_get:
             item_position = "1"
             data_found = True
-        elif item['text2_id'] == estc_id_to_get:
+        elif get_actual_eebo_id(item['text2_id']) == id_to_get:
             item_position = "2"
             data_found = True
         if data_found:
@@ -63,17 +68,17 @@ def get_single_input_output(input_filename):
 
 
 parser = argparse.ArgumentParser(
-    description="Fetch single ESTC id text reuse data.")
+    description="Fetch single ECCO id text reuse data.")
 parser.add_argument("--indexfile", help="Index file location",
                     default="../data/work/text_index.json")
-parser.add_argument("--id", help="ESTC / EEBO id of interest", required=True)
+parser.add_argument("--id", help="ECCO / EEBO id of interest", required=True)
 parser.add_argument("--outputpath", help="Output files location",
                     default="../data/work/tr_output")
 args = parser.parse_args()
 
 
 index_datafile = args.indexfile
-estc_id_to_get = args.id
+id_to_get = args.id
 outputpath = args.outputpath
 
 create_dir_if_not_exists(outputpath)
@@ -82,7 +87,7 @@ with open(index_datafile, 'r') as jsondata:
     data_index = json.load(jsondata)
 
 
-if estc_id_to_get not in data_index.keys():
+if id_to_get not in data_index.keys():
     sys.exit("ID not found in text reuse data.")
 
 files_of_interest = data_index[estc_id_to_get]
@@ -92,7 +97,7 @@ max_i = len(files_of_interest)
 for filename in files_of_interest:
     i += 1
     print("Reading " + str(i) + "/" + str(max_i) + " : " + filename)
-    outputdata = get_single_input_output(filename)
+    outputdata = get_single_input_output(filename, id_to_get)
     if len(outputdata) > 0:
         outputfname = (
             outputpath + "/results_" + filename.split("/")[-1].split(".")[0] +

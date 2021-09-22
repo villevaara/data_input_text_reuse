@@ -5,7 +5,13 @@ import json
 import argparse
 
 
-def add_to_text_index(text_index, item_id, tarfile_name):
+def get_actual_eebo_id(long_eebo_part_id):
+    actual_eebo_id = long_eebo_part_id.split(".")[0]
+    return actual_eebo_id
+
+
+def add_to_text_index(text_index, full_item_id, tarfile_name):
+    item_id = get_actual_eebo_id(full_item_id)
     if item_id in text_index.keys():
         text_index[item_id].add(tarfile_name)
     else:
@@ -18,8 +24,10 @@ def process_tarfile(tarfile, text_index, logfile):
     if tar_cont is not None:
         for item in tar_cont:
             for sub_item in item:
-                add_to_text_index(text_index, sub_item['text1_id'], tarfile)
-                add_to_text_index(text_index, sub_item['text2_id'], tarfile)
+                add_to_text_index(text_index, get_actual_eebo_id(
+                    sub_item['text1_id']), tarfile)
+                add_to_text_index(text_index, get_actual_eebo_id(
+                    sub_item['text2_id']), tarfile)
 
 
 def write_index(text_index, output_fname):

@@ -22,7 +22,7 @@ def get_current_timestamp_string():
 
 def read_csv_to_dictlist(csv_file):
     ret_list = []
-    with open(csv_file, 'r') as csvfile:
+    with open(csv_file, 'r', encoding="utf-8") as csvfile:
         csvreader = csv.DictReader(csvfile)
         for row in csvreader:
             ret_list.append(row)
@@ -30,7 +30,7 @@ def read_csv_to_dictlist(csv_file):
 
 
 def write_csv_from_dictlist(dictlist, csv_file):
-    with open(csv_file, 'w') as outfile:
+    with open(csv_file, 'w', encoding="utf-8") as outfile:
         fieldnames = dictlist[0].keys()
         csvwriter = csv.DictWriter(outfile, fieldnames=fieldnames)
         csvwriter.writeheader()
