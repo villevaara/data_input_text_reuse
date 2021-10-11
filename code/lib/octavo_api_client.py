@@ -243,9 +243,9 @@ class OctavoEeboClient(OctavoAPIClient):
 
         self.announce_query(api_request)
         response_json = self.get_api_response(api_request)
-        text = response_json.get('results').get('docs')[0].get('content')
+        text = response_json.get('result').get('docs')[0].get('content')
         collection = (
-            response_json.get('results').get('docs')[0].get('collectionID'))
+            response_json.get('result').get('docs')[0].get('collectionID'))
         retdict = {'text': text, 'collection': collection}
         return retdict
 
@@ -270,7 +270,7 @@ class OctavoEccoClient(OctavoAPIClient):
                        "§DOCUMENT>&field=documentID" +
                        self.limit_timeout_part)
         self.announce_query(api_request)
-        data = self.get_api_response(api_request).get('results').get('docs')
+        data = self.get_api_response(api_request).get('result').get('docs')
         doc_ids = []
         for entry in data:
             doc_ids.append(entry['documentID'])
@@ -287,9 +287,9 @@ class OctavoEccoClient(OctavoAPIClient):
         # response = get(api_request)
         response_json = self.get_api_response(api_request)
 
-        text = response_json.get('results').get('docs')[0].get('content')
+        text = response_json.get('result').get('docs')[0].get('content')
         collection = (
-            response_json.get('results').get('docs')[0].get('collectionID'))
+            response_json.get('result').get('docs')[0].get('collectionID'))
 
         retdict = {'text': text, 'collection': collection}
         return retdict
@@ -315,7 +315,7 @@ class OctavoEccoClient(OctavoAPIClient):
                        fields_part +
                        self.limit_timeout_part)
         self.announce_query(api_request)
-        data = self.get_api_response(api_request).get('results').get('docs')
+        data = self.get_api_response(api_request).get('result').get('docs')
         return data
 
     def get_document_id_metadata(self, document_id):
@@ -339,7 +339,7 @@ class OctavoEccoClient(OctavoAPIClient):
                        fields_part +
                        self.limit_timeout_part)
         self.announce_query(api_request)
-        data = self.get_api_response(api_request).get('results').get('docs')
+        data = self.get_api_response(api_request).get('result').get('docs')
         return data
 
     def get_documents_by_length(self, length, operator, fields):
@@ -361,5 +361,5 @@ class OctavoEccoClient(OctavoAPIClient):
         self.announce_query(api_request)
         # response = get(api_request)
         # data = response.json().get('result').get('docs')
-        data = self.get_api_response(api_request).get('results').get('docs')
+        data = self.get_api_response(api_request).get('result').get('docs')
         return data

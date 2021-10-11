@@ -151,27 +151,41 @@ def get_raw_eebotext(text_id, eebo_by_id):
 
 
 galeitems = read_csv_to_dictlist(
-    "../data/work/idpairs_rich_ecco_eebo_estc.csv")
-# jsonfiles = get_datafiles("../data/work/bayle1734_2/")
+    "../data/work/idpairs_ecco_eebo_estc.csv")
 eccoindex = read_csv_to_dictlist("../data/work/ecco_dict.csv")
 eeboindex = read_csv_to_dictlist("../data/work/eebo_dict.csv")
 eebo_by_id = list_to_dict_by_key(eeboindex, 'id')
 ecco_by_id = list_to_dict_by_key(eccoindex, 'id')
 outjson = '../data/work/tr_offset_index.json'
 
-jsonpaths = [
-    "../data/work/hume_full/",
-    "../data/work/hackathon/"
-    ]
+# jsonpaths = [
+#     "../data/work/projc/A88639/",
+#     "../data/work/projc/0098301300",
+#     "../data/work/projc/0256800600",
+#     "../data/work/projc/0294000102",
+#     "../data/work/projc/0434800100",
+#     "../data/work/projc/0661600600",
+#     "../data/work/projc/1230800400",
+#     "../data/work/projc/1516302100",
+#     "../data/work/projc/0111900600",
+#     "../data/work/projc/0294000101",
+#     "../data/work/projc/0294000103",
+#     "../data/work/projc/0564000100",
+#     "../data/work/projc/1096200100",
+#     "../data/work/projc/1400100400",
+#     "../data/work/projc/1538800300",
+#     # "../data/work/hackathon/",
+#     # "../data/work/hume_full/",
+#     ]
 
 
-all_data = []
-for path in jsonpaths:
-    jsonfiles = get_datafiles(path)
-    for jsonfileloc in jsonfiles:
-        with open(jsonfileloc, 'r') as jsonfile:
-            jsondata = json.load(jsonfile)
-            all_data.extend(jsondata)
+# all_data = []
+# for path in jsonpaths:
+#     jsonfiles = get_datafiles(path)
+#     for jsonfileloc in jsonfiles:
+#         with open(jsonfileloc, 'r') as jsonfile:
+#             jsondata = json.load(jsonfile)
+#             all_data.extend(jsondata)
 
 
 # xxxx
@@ -180,9 +194,9 @@ eebo_api_client = OctavoEeboClient()
 char_offsets = {}
 
 text_ids = []
-for item in all_data:
-    text_ids.append(item['id_primary'])
-    text_ids.append(item['id_secondary'])
+for item in galeitems:
+    text_ids.append(item['document_id_octavo'])
+    # text_ids.append(item['id_secondary'])
 
 text_ids = list(set(text_ids))
 # text_ids = text_ids[:50]
@@ -196,8 +210,11 @@ text_ids = list(set(text_ids))
 # problems still:
 # 'A65588'
 
+total_len = len(text_ids)
+item_nro = 0
+
 for text_id in text_ids:
-    print(text_id)
+    print("processing: " + str(text_id) + " - " + str(item_nro) + "/" + str(total_len))
     if text_id[0] == "A" or text_id[0] == "B":
         if text_id.split("_")[-1] != 'text':
             continue
@@ -223,20 +240,7 @@ for text_id in text_ids:
         offset = get_char_offset_index_from_eebo_headers(headers, eebotextdata)
     test_offsets(raw_text, api_text, offset, text_id)
     char_offsets[text_id] = offset
-
-# indexdataloc = '../data/work/bayle1734_index.json'
-
-# with open(outjson, 'r', encoding='utf-8') as f:
-#     temp_indexdata = json.load(f)
-#     indexdata = {}
-#     for key, value in temp_indexdata.items():
-#         item_indices = {}
-#         for index, items in value.items():
-#             item_indices[int(index)] = items
-#         indexdata[key] = item_indices
-
-# for key, value in char_offsets.items():
-#     indexdata[key] = value
+    item_nro += 1
 
 with open(outjson, 'w', encoding='utf-8') as f:
     json.dump(char_offsets, f, ensure_ascii=False, indent=4)

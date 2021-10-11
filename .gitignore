@@ -3,10 +3,11 @@ data/work/*.csv
 data/work/*/*.tsv
 data/work/img
 data/work/blast_*
-data/work
+data/work/*
 venv
 __pycache__
 output
 *.pdf
 *.tar.gz
 logs/*.csv
+!data/work/idpairs_ecco_eebo_estc.csv

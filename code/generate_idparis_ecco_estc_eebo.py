@@ -32,13 +32,13 @@ fields_eebo2 = {
     'timeout': 60}
 
 results_ecco1 = this_client.post_api_response(
-    api_ecco, fields_ecco1)['results']['docs']
+    api_ecco, fields_ecco1)['result']['docs']
 results_ecco2 = this_client.post_api_response(
-    api_ecco, fields_ecco2)['results']['docs']
+    api_ecco, fields_ecco2)['result']['docs']
 results_eebo1 = this_client.post_api_response(
-    api_eebo, fields_eebo1)['results']['docs']
+    api_eebo, fields_eebo1)['result']['docs']
 results_eebo2 = this_client.post_api_response(
-    api_eebo, fields_eebo2)['results']['docs']
+    api_eebo, fields_eebo2)['result']['docs']
 
 all_res = []
 all_res.extend(results_ecco1)
@@ -70,3 +70,36 @@ with open(outfile, 'w') as csvfile:
                          'title': item['title'],
                          'author': item['author'],
                          'text_length': item['documentLength']})
+
+
+def get_short_estc_id(long_estc_id):
+    long_estc_id_first_char = long_estc_id[0]
+    short_estc_id_rest = str(int(long_estc_id[1:].split("_")[0]))
+    short_estc_id = long_estc_id_first_char + short_estc_id_rest
+    return short_estc_id
+
+
+clean_outfile = "../data/work/idpairs_ecco_eebo_estc.csv"
+with open(clean_outfile, 'w') as csvfile:
+    fieldnames = ['estc_id', 'document_id', 'document_id_octavo',
+        'collection', 'estc_id_student_edition']
+    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+    writer.writeheader()
+    for item in all_res:
+        this_document_id_raw = str(item['documentID'])
+        if item['collectionID'] in ['eebo1', 'eebo2']:
+            this_collection = 'eebo'
+            if this_document_id_raw[:2] == "11":
+                this_document_id = "B" + this_document_id_raw[2:]
+            elif this_document_id_raw[:2] == "10":
+                this_document_id = "A" + this_document_id_raw[2:]
+        else:
+            this_collection = 'ecco'
+            this_document_id = this_document_id_raw
+        short_estc_id = get_short_estc_id(item['ESTCID'])
+        writer.writerow({'estc_id': item['ESTCID'],
+                         'document_id': this_document_id,
+                         'document_id_octavo': this_document_id_raw,
+                         'collection': this_collection,
+                         'estc_id_student_edition': short_estc_id})
+
