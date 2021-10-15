@@ -199,7 +199,6 @@ for item in galeitems:
     text_ids.append(item['document_id'])
     # text_ids.append(item['id_secondary'])
 
-text_ids = list(set(text_ids))
 # text_ids = text_ids[:50]
 # text_ids = ["A56206.headed_2_text", "A56206.headed_1_text"]
 # text_ids = ['0081400111']
@@ -216,8 +215,8 @@ item_nro = -1
 
 for text_id in text_ids:
     item_nro += 1
-    if item_nro < 140001:
-        continue
+    # if item_nro < 140001:
+    #     continue
     print("processing: " + str(text_id) + " - " + str(item_nro) + "/" + str(total_len))
     if text_id[0] == "A" or text_id[0] == "B":
         raw_text_path = eebo_by_id[
