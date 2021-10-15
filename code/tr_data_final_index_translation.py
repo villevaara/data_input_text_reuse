@@ -116,8 +116,8 @@ def writetext(textstr, outfile):
 
 
 def get_raw_eebotext(text_id, eebo_by_id):
-    if text_id.split('text')[-1] != '':
-        return None
+    # if text_id.split('text')[-1] != '':
+    #     return None
     general_id = text_id = text_id.split(".")[0]
     raw_text_path = eebo_by_id[general_id][0]['path'] + "/"
     dirfiles = os.listdir(raw_text_path)
@@ -156,7 +156,8 @@ eccoindex = read_csv_to_dictlist("../data/work/ecco_dict.csv")
 eeboindex = read_csv_to_dictlist("../data/work/eebo_dict.csv")
 eebo_by_id = list_to_dict_by_key(eeboindex, 'id')
 ecco_by_id = list_to_dict_by_key(eccoindex, 'id')
-outjson = '../data/work/tr_offset_index.json'
+outjson = '../data/work/tr_offset_index_complete.json'
+outjsonpath = '../data/work/tr_offsets/'
 
 # jsonpaths = [
 #     "../data/work/projc/A88639/",
@@ -195,7 +196,7 @@ char_offsets = {}
 
 text_ids = []
 for item in galeitems:
-    text_ids.append(item['document_id_octavo'])
+    text_ids.append(item['document_id'])
     # text_ids.append(item['id_secondary'])
 
 text_ids = list(set(text_ids))
@@ -211,21 +212,21 @@ text_ids = list(set(text_ids))
 # 'A65588'
 
 total_len = len(text_ids)
-item_nro = 0
+item_nro = -1
 
 for text_id in text_ids:
+    item_nro += 1
+    if item_nro < 140001:
+        continue
     print("processing: " + str(text_id) + " - " + str(item_nro) + "/" + str(total_len))
     if text_id[0] == "A" or text_id[0] == "B":
-        if text_id.split("_")[-1] != 'text':
-            continue
-        else:
-            raw_text_path = eebo_by_id[
-                text_id.split(".")[0]][0]['path'] + "/" + (text_id + ".txt")
-            eebotextdata = get_raw_eebotext(text_id, eebo_by_id)[text_id]
-            raw_text = eebotextdata['text']
-            api_text = eebo_api_client.get_text_for_document_id(
-                eebotextdata['api_text_id'])['text']
-            collection = "eebo"
+        raw_text_path = eebo_by_id[
+            text_id.split(".")[0]][0]['path'] + "/" + (text_id + ".txt")
+        eebotextdata = get_raw_eebotext(text_id, eebo_by_id)[text_id + '.headed_1_text']
+        raw_text = eebotextdata['text']
+        api_text = eebo_api_client.get_text_for_document_id(
+            eebotextdata['api_text_id'])['text']
+        collection = "eebo"
     else:
         api_text = ecco_api_client.get_text_for_document_id(text_id)['text']
         raw_text_path = ecco_by_id[text_id][0]['path'] + "/" + text_id + ".txt"
@@ -240,7 +241,16 @@ for text_id in text_ids:
         offset = get_char_offset_index_from_eebo_headers(headers, eebotextdata)
     test_offsets(raw_text, api_text, offset, text_id)
     char_offsets[text_id] = offset
-    item_nro += 1
+    if item_nro % 10000 == 0:
+        outjson = outjsonpath + 'tr_offset_' + str(item_nro) + '.json'
+        print('>>>> Writing: ' + outjson)
+        with open(outjson, 'w', encoding='utf-8') as f:
+            json.dump(char_offsets, f, ensure_ascii=False, indent=4)
+        char_offsets = {}
 
+
+outjson = outjsonpath + 'tr_offset_' + str(item_nro) + '.json'
+print('>>>> Writing: ' + outjson)
 with open(outjson, 'w', encoding='utf-8') as f:
     json.dump(char_offsets, f, ensure_ascii=False, indent=4)
+
