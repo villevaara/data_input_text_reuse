@@ -241,6 +241,8 @@ for text_id in text_ids:
     test_offsets(raw_text, api_text, offset, text_id)
     char_offsets[text_id] = offset
     if item_nro % 10000 == 0:
+        if item_nro == 0:
+            continue
         outjson = outjsonpath + 'tr_offset_' + str(item_nro) + '.json'
         print('>>>> Writing: ' + outjson)
         with open(outjson, 'w', encoding='utf-8') as f:
