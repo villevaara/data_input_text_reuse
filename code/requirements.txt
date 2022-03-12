@@ -5,7 +5,7 @@ idna==2.8
 joblib==0.17.0
 lmdb==1.0.0
 neo4j==4.2.1
-Pillow==6.2.0
+Pillow==9.0.1
 pytz==2021.1
 requests==2.22.0
 tqdm==4.52.0
