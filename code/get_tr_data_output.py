@@ -123,7 +123,7 @@ for id_to_get in ids_to_get:
     if id_to_get not in data_index.keys():
         print("id " + id_to_get + " not found in indexfile.")
         continue
-    files_of_interest.append(data_index[id_to_get])
+    files_of_interest.extend(data_index[id_to_get])
 
 i = 0
 max_i = len(files_of_interest)
