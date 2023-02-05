@@ -120,6 +120,9 @@ with open(index_datafile, 'r') as jsondata:
 
 files_of_interest = list()
 for id_to_get in ids_to_get:
+    if id_to_get not in data_index.keys():
+        print("id " + ids_to_get + " not found in indexfile.")
+        continue
     files_of_interest.append(data_index[id_to_get])
 
 i = 0
