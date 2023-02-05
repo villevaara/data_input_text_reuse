@@ -3,7 +3,6 @@ data/work/*.csv
 data/work/*/*.tsv
 data/work/img
 data/work/blast_*
-data/work/*
 venv
 __pycache__
 output
