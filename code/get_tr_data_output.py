@@ -88,6 +88,14 @@ def get_single_input_output_manyids(input_filename, ids_to_get):
 def read_idfile(idfile):
     with open(idfile, 'r') as f:
         ids = f.readlines()
+￼
+2
+Tykkää
+VastaaJaa3 t
+Nico Thien
+Great job ￼
+Tykkää
+
         ids_filtered = [id.strip() for id in ids if id != ""]
     return ids_filtered
 
@@ -124,6 +132,7 @@ for id_to_get in ids_to_get:
         print("id " + id_to_get + " not found in indexfile.")
         continue
     files_of_interest.extend(data_index[id_to_get])
+    files_of_interest = list(set(files_of_interest))
 
 i = 0
 max_i = len(files_of_interest)
