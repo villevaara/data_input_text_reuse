@@ -43,3 +43,11 @@ outputdir = "../output/" + datadir + "/"
 `python generate_json.py test_hume5_blastdb25/data_out`
 
 ## generate_pdf.py
+
+# Pick subset of BLAST results
+
+## get_tr_data_output.py
+
+```
+python3 get_tr_data_output.py --idfile ../data/work/doc_ids_shakespeare.txt --outputpath ../data/work/shaketest
+```
