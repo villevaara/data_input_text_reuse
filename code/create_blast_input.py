@@ -92,7 +92,18 @@ def filter_eebo_file(eebo_filepath):
         return False
 
 
-def get_input_id_stream(sourcedir):
+def filter_clear_eebo_file(eebo_filepath):
+    eebo_filename_lastpart = eebo_filepath.split("/")[-1]
+    if "_note_at_" in eebo_filename_lastpart:
+        return True
+    elif len(eebo_filename_lastpart.split(".")) == 3:
+        if ".".join(eebo_filename_lastpart.split(".")[-2:]) == 'headed.txt':
+            return True
+    else:
+        return False
+
+
+def get_input_id_stream(sourcedir, prefix):
     # iterate over *.txt files in input dir,
     # pass files through metadata function
     # filter them
@@ -105,7 +116,9 @@ def get_input_id_stream(sourcedir):
                 abspath = os.path.abspath(thispath)
                 txt_meta = get_txt_file_metadata(abspath)
                 keep_this = False
-                if txt_meta['collection'][:4] == "eebo":
+                if prefix == "eebo-clear":
+                    keep_this = filter_clear_eebo_file(abspath)
+                elif txt_meta['collection'][:4] == "eebo":
                     # eebo tcp text is broken up, so only limited
                     # files taken as text reuse input data
                     keep_this = filter_eebo_file(abspath)
@@ -178,7 +191,7 @@ else:
     logfile = None
 
 
-input_stream = get_input_id_stream(args.input)
+input_stream = get_input_id_stream(args.input, args.prefix)
 process_input_stream_to_chunks(
     input_generator=input_stream,
     logfile=logfile,

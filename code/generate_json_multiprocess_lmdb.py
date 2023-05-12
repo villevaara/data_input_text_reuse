@@ -16,6 +16,7 @@ from datetime import timedelta
 from time import time
 import lmdb
 from tqdm import tqdm
+# import jsonlines
 
 
 def read_txt(text_file_loc):
@@ -218,7 +219,7 @@ class DataProcessorDB:
 
 
 def process_batch_files_db(
-        batchdir, outputdir, db_loc, threads, this_iter, use_tqdm):
+        batchdir, outputdir, db_loc, threads, this_iter, use_tqdm, fill_text):
     this_tar = batchdir + "/iter_" + str(this_iter) + ".tar.gz"
     batch_data = blastdr.get_single_tar_contents(this_tar)
     dataprocessor = DataProcessorDB(db_loc)
@@ -233,12 +234,23 @@ def process_batch_files_db(
     tarout_fname = outputdir + "/iter_" + str(this_iter) + "_out.tar.gz"
     tarfile_out = tarfile.open(tarout_fname, 'w:gz')
     s = StringIO()
-    writethis = json.dumps(
-        ready_data_final, indent=2, ensure_ascii=False)
+    jsonlines_s = list()
+    for item in ready_data_final:
+        if not fill_text:
+            this_item = dict()
+            for k, v in item.items():
+                if k not in ['text1_text', 'text2_text']:
+                    this_item[k] = v
+        else:
+            this_item = item
+        jsonlines_s.append(
+            json.dumps(this_item, ensure_ascii=False) + "\n"
+        )
+    writethis = "".join(jsonlines_s)
     s.write(writethis)
     s.seek(0)
     tarinfo = tarfile.TarInfo(
-        name="iter_" + str(this_iter) + ".json")
+        name="iter_" + str(this_iter) + ".jsonl")
     tarinfo.size = len(s.getvalue().encode('utf-8'))
     tarfile_out.addfile(
         tarinfo=tarinfo, fileobj=BytesIO(s.getvalue().encode('utf-8')))
@@ -258,18 +270,14 @@ def get_processed_iters_from_output_path(outputdir):
 parser = argparse.ArgumentParser(description="Decode indices back to text.")
 parser.add_argument("--datadir", help="Input datadir", required=True)
 parser.add_argument("--outdir", help="Output datadir", required=True)
-parser.add_argument(
-    "--iter", help="INT. Iteration to process. -1 (default) = process all.",
-    type=int, default=-1)
-parser.add_argument(
-    "--threads", help="Number of parallel threads to use.",
-    type=int, default=1)
-parser.add_argument(
-    "--db", help="Location of LMDB database for texts", required=True)
-parser.add_argument('--tqdm', help="Display progress with tqdm.",
-                    dest='tqdm', action='store_true')
-parser.add_argument('--no-tqdm',  help="Do noty display progress with tqdm.",
-                    dest='tqdm', action='store_false')
+parser.add_argument("--iter", help="INT. Iteration to process. -1 (default) = process all.", type=int, default=-1)
+parser.add_argument( "--threads", help="Number of parallel threads to use.", type=int, default=1)
+parser.add_argument( "--db", help="Location of LMDB database for texts", required=True)
+parser.add_argument("--fill_text", help="Fill texts or only translate indices?", dest='fill_text', action='store_true')
+parser.add_argument("--no_text", help="Fill texts or only translate indices?", dest='fill_text', action='store_false')
+parser.set_defaults(fill_text=False)
+parser.add_argument('--tqdm', help="Display progress with tqdm.", dest='tqdm', action='store_true')
+parser.add_argument('--no_tqdm',  help="Do not display progress with tqdm.", dest='tqdm', action='store_false')
 parser.set_defaults(tqdm=False)
 args = parser.parse_args()
 
@@ -280,6 +288,7 @@ thisiter = args.iter
 threads = args.threads
 db_loc = args.db
 use_tqdm = args.tqdm
+fill_text = args.fill_text
 
 # db_loc = ('/media/vvaara/My Passport/worktemp/txt_reuse/txt_reuse/' +
 #           'blast_work_from_puhti/blast_work/db/original_data_DB/')
@@ -324,7 +333,7 @@ start_time = time()
 for current_iter in iters_to_process:
     print("Processing iter: " + str(current_iter))
     process_batch_files_db(inputdir, outputdir, db_loc,
-                           threads, current_iter, use_tqdm)
+                           threads, current_iter, use_tqdm, fill_text)
 
 print("\nEnd tim e:", datetime.now())
 print("Elapsed:", str(timedelta(seconds=(int(time()-start_time)))))

@@ -3,6 +3,8 @@ data/work/*.csv
 data/work/*/*.tsv
 data/work/img
 data/work/blast_*
+data/work/chunks_for_blast
+data/work/logs
 venv
 __pycache__
 output
@@ -10,3 +12,4 @@ output
 *.tar.gz
 logs/*.csv
 !data/work/idpairs_ecco_eebo_estc.csv
+.idea

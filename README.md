@@ -39,3 +39,5 @@ Turn finished text reuse data (indices in csv files) back to json with actual te
 ## Usage
 
 `python generate_json.py --datadir DATADIR HERE --outdir OUTPUTDIR HERE --iter ITERATION NUMBER TO PROCESS`  
+
+python generate_json_multiprocess_lmdb.py --datadir "../../text-reuse-verify/data/raw/qpi1" --outdir "../../text-reuse-verify/data/work/processed" --threads 8 --db "../../text-reuse-verify/data/blast_work/db/original_data_DB" --iter 3976 --tqdm
