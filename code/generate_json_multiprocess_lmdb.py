@@ -279,6 +279,8 @@ parser.set_defaults(fill_text=False)
 parser.add_argument('--tqdm', help="Display progress with tqdm.", dest='tqdm', action='store_true')
 parser.add_argument('--no_tqdm',  help="Do not display progress with tqdm.", dest='tqdm', action='store_false')
 parser.set_defaults(tqdm=False)
+parser.add_argument('--modulo_l',  help="For multiple parallel runs. Modulo amount.", type=int, default=-1)
+parser.add_argument('--modulo_i',  help="For multiple parallel runs. Modulo iter.", type=int, default=-1)
 args = parser.parse_args()
 
 
@@ -289,6 +291,9 @@ threads = args.threads
 db_loc = args.db
 use_tqdm = args.tqdm
 fill_text = args.fill_text
+
+modulo_l = args.modulo_l
+modulo_i = args.modulo_i
 
 # db_loc = ('/media/vvaara/My Passport/worktemp/txt_reuse/txt_reuse/' +
 #           'blast_work_from_puhti/blast_work/db/original_data_DB/')
@@ -323,6 +328,8 @@ print("DB Location: " + db_loc)
 print("Iters to process: " + str(len(iters_to_process)))
 print("Iters all       : " + str(len(all_iter)))
 print("Iters processed : " + str(len(processed_iters)))
+print("Modulo length   : " + str(modulo_l))
+print("Modulo iter     : " + str(modulo_i))
 
 print("\nStart time:", datetime.now())
 start_time = time()
@@ -331,6 +338,9 @@ start_time = time()
 # EEBO = 10GB
 
 for current_iter in iters_to_process:
+    if modulo_l != -1 and modulo_i != -1:
+        if current_iter % modulo_l != modulo_i:
+            continue
     print("Processing iter: " + str(current_iter))
     process_batch_files_db(inputdir, outputdir, db_loc,
                            threads, current_iter, use_tqdm, fill_text)
