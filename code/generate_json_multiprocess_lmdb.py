@@ -222,6 +222,8 @@ def process_batch_files_db(
         batchdir, outputdir, db_loc, threads, this_iter, use_tqdm, fill_text):
     this_tar = batchdir + "/iter_" + str(this_iter) + ".tar.gz"
     batch_data = blastdr.get_single_tar_contents(this_tar)
+    if batch_data is None:
+        return None
     dataprocessor = DataProcessorDB(db_loc)
     #
     ready_data = dataprocessor.get_batch_jsondata_db(
@@ -275,7 +277,7 @@ parser.add_argument( "--threads", help="Number of parallel threads to use.", typ
 parser.add_argument( "--db", help="Location of LMDB database for texts", required=True)
 parser.add_argument("--fill_text", help="Fill texts or only translate indices?", dest='fill_text', action='store_true')
 parser.add_argument("--no_text", help="Fill texts or only translate indices?", dest='fill_text', action='store_false')
-parser.set_defaults(fill_text=False)
+parser.set_defaults(fill_text=True)
 parser.add_argument('--tqdm', help="Display progress with tqdm.", dest='tqdm', action='store_true')
 parser.add_argument('--no_tqdm',  help="Do not display progress with tqdm.", dest='tqdm', action='store_false')
 parser.set_defaults(tqdm=False)

@@ -129,7 +129,11 @@ def extract_single_tar_datafiles(tarpath):
 
 
 def get_single_tar_contents(tarpath):
-    tar = tarfile.open(tarpath, "r:gz")
+    try:
+        tar = tarfile.open(tarpath, "r:gz")
+    except:
+        print("!! An error occurred opening " + tarpath)
+        return None
     all_contents = []
     for member in tar.getmembers():
         f = tar.extractfile(member)
